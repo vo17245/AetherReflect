@@ -74,7 +74,7 @@ class Struct(CppNamed):
         getter_str=""
         
         getter_str+=f"\
-        static ReflectVariant get(const {self.name}& obj,const std::string& key){{"
+        static ReflectVariant Get(const {self.name}& obj,const std::string& key){{"
         for i in range(len(self.fields)):
             if i==0:
                 getter_str+=f"""
@@ -90,7 +90,7 @@ class Struct(CppNamed):
 
     
     # ======= setter
-        setter_str=f"static void set({self.name}& obj,const std::string& key,const ReflectVariant& value){{\n"
+        setter_str=f"static void Set({self.name}& obj,const std::string& key,const ReflectVariant& value){{\n"
         for i in range(len(self.fields)):
             if i==0:
                 setter_str+=f"""
@@ -112,6 +112,7 @@ class Struct(CppNamed):
     # ======= code
         code=f"""\
 namespace {namespace}{{
+    template<>
     struct {name}<{self.name}>
     {{
         static constexpr const inline char* name="{self.name}";
