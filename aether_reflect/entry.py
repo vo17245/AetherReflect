@@ -9,6 +9,18 @@ from do_file import do_file
 import subprocess
 
 import os
+import os
+
+
+def to_abs_path(path):
+    return os.path.abspath(path)
+
+def get_standard_unix_path(path):
+    res=to_abs_path(path)
+    res=res.replace("\\","/")
+    while res.find("//")!=-1:
+        res=res.replace("//","/")
+    return res
 def get_files_recursive(dir):
     res=[]
     for root, dirs, files in os.walk(dir):
@@ -21,17 +33,15 @@ def clang_format(dir):
     for file in files:
         subprocess.run(["clang-format","-i",dir+file])
 def main():
-    if len(sys.argv)==2 and sys.argv[1]=="ut":
-        run_ut()
-    elif len(sys.argv)==3 and sys.argv[1]=="format":
-        clang_format(sys.argv[2])
-    elif len(sys.argv)==5:
-        input_dir=sys.argv[1]
-        output_dir=sys.argv[2]
-        variant_header_path=sys.argv[3]
-        variant_header_include=sys.argv[4]
-        
-        root=get_config().root
+    
+    if len(sys.argv)==6:
+        input_dir=get_standard_unix_path(sys.argv[1])
+        output_dir=get_standard_unix_path(sys.argv[2])
+        if not os.path.exists(input_dir):
+            os.makedirs(input_dir)
+        variant_header_filename=sys.argv[3]
+        variant_type_full_name=sys.argv[4]
+        meta_type_full_name=sys.argv[5]
         input_files=get_files_recursive(input_dir)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -42,10 +52,23 @@ def main():
             if not os.path.exists(output_dir+"/"+parent_dir):
                 os.makedirs(output_dir+"/"+parent_dir)
             group.add_file(parent_dir+"/"+file.name,file)
-        group.write_variant_header_file(variant_header_path)
+        group.write_variant_header_file(f"{output_dir}/{variant_header_filename}",variant_type_full_name)
         for path,file in group.files:
-            file.add_include_file_relative(variant_header_include)
-        group.write_files()
+            path=get_standard_unix_path(path)
+            t=path.replace(input_dir,"")
+            arr=t.split("/")
+            arr_t=[]
+            for item in arr:
+                if item=="":
+                    continue
+                arr_t.append(item)
+            arr=arr_t
+            d=""
+            if len(arr)>=2:
+                for i in range(len(arr)-2):
+                    d+="../"
+            file.add_include_file_relative(d+f"{variant_header_filename}")
+        group.write_files(variant_type_full_name,meta_type_full_name)
         clang_format(output_dir)
     else:
         print("invalid args")

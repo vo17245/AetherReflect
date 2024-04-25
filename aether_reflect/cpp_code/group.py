@@ -7,14 +7,29 @@ class Group:
         self.files:list[str,File]=[]
     def add_file(self,path,file):
         self.files.append([path,file])
-    def create_variant_file(self):
+    def create_variant_file(self,variant_type_full_name):
         all_field_type=[]
         for path,file in self.files:
             for struct in file.structs:
                 for field in struct.fields:
                     all_field_type.append(field.type)
         all_field_type=list(set(all_field_type))
-        variant_str="using ReflectVariant=std::variant<"
+
+        name_arr=variant_type_full_name.split("::")
+        name_arr_t=[]
+        for item in name_arr:
+            if item=="":
+                continue
+            name_arr_t.append(item)
+        name_arr=name_arr_t
+        namespace_begin=""
+        namespace_end=""
+        if len(name_arr)>1:
+            for item in name_arr:
+                namespace_begin+=f"namespace {item}{{"
+                namespace_end+="}"
+            
+        variant_str=f"using {name_arr[-1]}=std::variant<"
         
         for i in range(len(all_field_type)):
             if i==0:
@@ -39,18 +54,18 @@ class Group:
         
         return f"""{header}
     {all_include}
-    namespace Aether{{
-    template<typename T>
-    struct Reflect{{}};
+    {namespace_begin}
     {variant_str}
-    }}"""
-    def write_files(self):
+
+    {namespace_end}
+    """
+    def write_files(self,variant_type_full_name,meta_type_full_name):
         for path,file in self.files:
             with open(f"{self.dir_path}/{path}","w",encoding="utf-8") as f:
-                f.write(file.to_string())
+                f.write(file.to_string(variant_type_full_name,meta_type_full_name))
         
         
-    def write_variant_header_file(self,path):
+    def write_variant_header_file(self,path,variant_type_full_name):
         variant_path=f"{self.dir_path}/reflect_variant.h"
         with open(variant_path,"w",encoding="utf-8") as f:
-            f.write(self.create_variant_file())
+            f.write(self.create_variant_file(variant_type_full_name))

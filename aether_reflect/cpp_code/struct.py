@@ -59,9 +59,21 @@ class Struct(CppNamed):
             fields_str+=add_indent(field.to_string(),indent)
         cur_indent-=indent
         return f"{namespace_begin}{struct_begin}{constructors_str}{fields_str}{struct_end}{namespace_end}"
-    def create_reflect_code(self):
-        namespace="Aether"
-        name="Reflect"
+    def create_reflect_code(self,variant_type_full_name,meta_type_full_name):
+        name_arr=meta_type_full_name.split("::")
+        name_arr_t=[]
+        for item in name_arr:
+            if item=="":
+                continue
+            name_arr_t.append(item)
+        name_arr=name_arr_t
+        namespace_begin=""
+        namespace_end=""
+        if len(name_arr)>1:
+            for i in range(len(name_arr)-1) :
+                item=name_arr[i]
+                namespace_begin+=f"namespace {item}{{"
+                namespace_end+="}"
         field_names="{"
         for field in self.fields:
             field_names+=f'"{field.name}",'
@@ -74,7 +86,7 @@ class Struct(CppNamed):
         getter_str=""
         
         getter_str+=f"\
-        static ReflectVariant Get(const {self.name}& obj,const std::string& key){{"
+        static {variant_type_full_name} Get(const {self.name}& obj,const std::string& key){{"
         for i in range(len(self.fields)):
             if i==0:
                 getter_str+=f"""
@@ -111,9 +123,9 @@ class Struct(CppNamed):
         field_comment+="};"
     # ======= code
         code=f"""\
-namespace {namespace}{{
+        {namespace_begin}
     template<>
-    struct {name}<{self.name}>
+    struct {name_arr[-1]}<{self.name}>
     {{
         static constexpr const inline char* name="{self.name}";
         static constexpr const inline char* comment="{self.comment}";
@@ -124,7 +136,7 @@ namespace {namespace}{{
         {getter_str}
         {setter_str}
     }};
-}}
+    {namespace_end}
         """
         return code
     @staticmethod
