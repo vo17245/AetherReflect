@@ -25,7 +25,8 @@ class Group:
         namespace_begin=""
         namespace_end=""
         if len(name_arr)>1:
-            for item in name_arr:
+            for i in range(len(name_arr)-1) :
+                item=name_arr[i]
                 namespace_begin+=f"namespace {item}{{"
                 namespace_end+="}"
             
@@ -66,6 +67,5 @@ class Group:
         
         
     def write_variant_header_file(self,path,variant_type_full_name):
-        variant_path=f"{self.dir_path}/reflect_variant.h"
-        with open(variant_path,"w",encoding="utf-8") as f:
+        with open(path,"w",encoding="utf-8") as f:
             f.write(self.create_variant_file(variant_type_full_name))

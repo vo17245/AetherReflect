@@ -33,7 +33,8 @@ def clang_format(dir):
     for file in files:
         subprocess.run(["clang-format","-i",dir+file])
 def main():
-    
+    if len(sys.argv)==2 and sys.argv[1]=="ut":
+        run_ut()
     if len(sys.argv)==6:
         input_dir=get_standard_unix_path(sys.argv[1])
         output_dir=get_standard_unix_path(sys.argv[2])

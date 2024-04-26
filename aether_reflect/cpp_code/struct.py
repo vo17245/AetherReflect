@@ -102,7 +102,7 @@ class Struct(CppNamed):
 
     
     # ======= setter
-        setter_str=f"static void Set({self.name}& obj,const std::string& key,const ReflectVariant& value){{\n"
+        setter_str=f"static void Set({self.name}& obj,const std::string& key,const {variant_type_full_name}& value){{\n"
         for i in range(len(self.fields)):
             if i==0:
                 setter_str+=f"""
