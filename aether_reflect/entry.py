@@ -69,6 +69,7 @@ def main():
                 for i in range(len(arr)-2):
                     d+="../"
             file.add_include_file_relative(d+f"{variant_header_filename}")
+            file.add_include_file_relative("Aether/Scene/Reflection.h")
         group.write_files(variant_type_full_name,meta_type_full_name)
         clang_format(output_dir)
     else:
